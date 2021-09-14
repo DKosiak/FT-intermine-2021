@@ -22,7 +22,7 @@ pipeline {
 	  
 	  stage ('Terraform Apply') {
         steps {
- 		  sh 'cd TF_files; terraform apply -no-color -auto-approve create.tfplan'
+ 		  sh 'terraform apply -no-color -auto-approve create.tfplan'
         }
 	  }	
     }
