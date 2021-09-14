@@ -9,14 +9,14 @@ pipeline {
   stages {
       stage('fetch_latest_code') {
         steps {
-          git credentialsId: 'GitHub', url: 'https://github.com/DKosiak/FT-intermine-2021.git'
+          git  url: 'https://github.com/DKosiak/FT-intermine-2021.git'
         }
       }
 	  
 	  stage('TF Init and Plan') {
 	    steps {
-          sh 'cd TF_files; terraform init'
-          sh 'cd TF_files; terraform plan -out=create.tfplan'
+          sh 'terraform init'
+          sh 'terraform plan -out=create.tfplan'
         }      
       }
 	  
