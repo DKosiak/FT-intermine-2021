@@ -15,14 +15,14 @@ pipeline {
 	  
 	  stage('TF Init and Plan') {
 	    steps {
-          sh 'cd TF_Files; terraform init'
-          sh 'cd TF_Files; terraform plan -out=create.tfplan'
+          sh 'cd TF_files; terraform init'
+          sh 'cd TF_files; terraform plan -out=create.tfplan'
         }      
       }
 	  
 	  stage ('Terraform Apply') {
         steps {
- 		  sh 'cd TF_Files; terraform apply -no-color -auto-approve create.tfplan'
+ 		  sh 'cd TF_files; terraform apply -no-color -auto-approve create.tfplan'
         }
 	  }	
     }
