@@ -9,7 +9,7 @@ pipeline {
   stages {
       stage('fetch_latest_code') {
         steps {
-          git  url: 'https://github.com/DKosiak/FT-intermine-2021.git'
+          git  'https://github.com/DKosiak/FT-intermine-2021.git'
         }
       }
 	  
