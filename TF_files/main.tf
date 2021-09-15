@@ -71,7 +71,7 @@ resource "aws_subnet" "ft_dev" {
   tags {
     Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
   }
-
+}
 
 #SG for DEV
 resource "aws_security_group" "alb_dev" {
