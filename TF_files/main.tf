@@ -48,27 +48,29 @@ resource "aws_subnet" "ft_jenkins" {
 
 #Subnet Prod
 resource "aws_subnet" "ft_prod" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
-  cidr_block              = "10.1.1.0/24"
-  availability_zone       = "us-east-1a"
+  count                   = "${length(data.aws_availability_zones.available.names)}"
+  vpc_id                  = "${aws_vpc.ft_vpc.id}"
+  cidr_block              = "10.1.${count.index}.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "${element(data.aws_availability_zones.available.names, count.index)}"
+
+  tags {
+    Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
+  }
 }
-resource "aws_subnet" "ft_prod" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
-  cidr_block              = "10.1.2.0/24"
-  availability_zone       = "us-east-1b"
-}
+
 
 #Subnet Dev
 resource "aws_subnet" "ft_dev" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
-}
-resource "aws_subnet" "ft_dev" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-east-1b"
-}
+  count                   = "${length(data.aws_availability_zones.available.names)}"
+  vpc_id                  = "${aws_vpc.ft_vpc.id}"
+  cidr_block              = "10.0.${count.index}.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "${element(data.aws_availability_zones.available.names, count.index)}"
+
+  tags {
+    Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
+  }
 
 
 #SG for DEV
