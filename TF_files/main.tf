@@ -5,56 +5,58 @@ provider "aws" {
 terraform {
   backend "s3" {
     # Replace this with your bucket name!
-    bucket         = "terraform-up-and-running-state"
-    key            = "global/s3/terraform.tfstate"
-    region         = "us-east-1"
+    bucket = "ft-terraform-up-and-running-state"
+    key    = "global/s3/terraform.tfstate"
+    region = "us-east-1"
     ## Replace this with your DynamoDB table name!
-    #dynamodb_table = "terraform-up-and-running-locks"
+    #dynamodb_table = "ft-terraform-up-and-running-locks"
     #encrypt        = true
   }
 }
 
+data "aws_availability_zones" "available" {}
+
 resource "aws_vpc" "ft_vpc" {
-  cidr_block = var.vpc_cidr
+  cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
-  tags {
+  tags  = {
     Name = "ft-vpc"
   }
 }
 
 resource "aws_internet_gateway" "ft_gateway" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
+  vpc_id = aws_vpc.ft_vpc.id
 
-  tags {
+  tags = {
     Name = "ft-gateway"
   }
 }
 
 resource "aws_route" "ft_route" {
-  route_table_id         = "${aws_vpc.ft_vpc.main_route_table_id}"
+  route_table_id         = aws_vpc.ft_vpc.main_route_table_id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "${aws_internet_gateway.ft_gateway.id}"
+  gateway_id             = aws_internet_gateway.ft_gateway.id
 }
 
 #Subnet jenkins
 resource "aws_subnet" "ft_jenkins" {
-  vpc_id = "${aws_vpc.ft_vpc.id}"
-  cidr_block              = "10.2.1.0/24"
-  availability_zone       = "us-east-1a"
-  tags {
+  vpc_id            = aws_vpc.ft_vpc.id
+  cidr_block        = "10.2.1.0/24"
+  availability_zone = "us-east-1a"
+  tags =  {
     Name = "ft-sub-jenkins"
   }
 }
 
 #Subnet Prod
 resource "aws_subnet" "ft_prod" {
-  count                   = "${length(data.aws_availability_zones.available.names)}"
-  vpc_id                  = "${aws_vpc.ft_vpc.id}"
+  count                   = length(data.aws_availability_zones.available.names)
+  vpc_id                  = aws_vpc.ft_vpc.id
   cidr_block              = "10.1.${count.index}.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "${element(data.aws_availability_zones.available.names, count.index)}"
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
-  tags {
+  tags = {
     Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
   }
 }
@@ -62,54 +64,54 @@ resource "aws_subnet" "ft_prod" {
 
 #Subnet Dev
 resource "aws_subnet" "ft_dev" {
-  count                   = "${length(data.aws_availability_zones.available.names)}"
-  vpc_id                  = "${aws_vpc.ft_vpc.id}"
+  count                   = length(data.aws_availability_zones.available.names)
+  vpc_id                  = aws_vpc.ft_vpc.id
   cidr_block              = "10.0.${count.index}.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "${element(data.aws_availability_zones.available.names, count.index)}"
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
-  tags {
+  tags = {
     Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
   }
 }
 
 #SG for DEV
 resource "aws_security_group" "alb_dev" {
-    name = "alb_dev-security-group"
+  name = "alb_dev-security-group"
 
-    # Allow HTTP
-    ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
+  # Allow HTTP
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    }
-    # Allow output
-    egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+  }
+  # Allow output
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    }
+  }
 }
 #SG for PROD
 resource "aws_security_group" "alb_prod" {
-    name = "alb_prod-security-group"
+  name = "alb_prod-security-group"
 
-    # Allow HTTP
-    ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
+  # Allow HTTP
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    }
-    # Allow output
-    egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+  }
+  # Allow output
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    }
+  }
 }
 
 #SG for Jenkins
@@ -117,16 +119,16 @@ resource "aws_security_group" "jenkins" {
   name = "jenkins-security-group"
 
   ingress {
-    from_port        = 8080
-    to_port            = 8080
-    protocol        = "tcp"
-    cidr_blocks        = ["0.0.0.0/0"]
-    }
-    # Allow output
-    egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    }
+  }
+  # Allow output
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
