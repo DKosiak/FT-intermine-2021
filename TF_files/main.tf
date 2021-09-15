@@ -41,7 +41,7 @@ resource "aws_route" "ft_route" {
 #Subnet jenkins
 resource "aws_subnet" "ft_jenkins" {
   vpc_id            = aws_vpc.ft_vpc.id
-  cidr_block        = "10.2.1.0/24"
+  cidr_block        = "10.0.200.0/24"
   availability_zone = "us-east-1a"
   tags =  {
     Name = "ft-sub-jenkins"
@@ -52,12 +52,12 @@ resource "aws_subnet" "ft_jenkins" {
 resource "aws_subnet" "ft_prod" {
   count                   = length(data.aws_availability_zones.available.names)
   vpc_id                  = aws_vpc.ft_vpc.id
-  cidr_block              = "10.1.${count.index}.0/24"
+  cidr_block              = "10.0.${count.index}.0/24"
   map_public_ip_on_launch = true
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
-    Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "ft-prod-${element(data.aws_availability_zones.available.names, count.index)}"
   }
 }
 
@@ -66,12 +66,12 @@ resource "aws_subnet" "ft_prod" {
 resource "aws_subnet" "ft_dev" {
   count                   = length(data.aws_availability_zones.available.names)
   vpc_id                  = aws_vpc.ft_vpc.id
-  cidr_block              = "10.0.${count.index}.0/24"
+  cidr_block              = "10.0.${100+count.index}.0/24"
   map_public_ip_on_launch = true
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
-    Name = "public-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name = "ft-dev-${element(data.aws_availability_zones.available.names, count.index)}"
   }
 }
 
