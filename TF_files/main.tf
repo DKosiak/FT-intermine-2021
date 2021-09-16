@@ -19,7 +19,7 @@ data "aws_availability_zones" "available" {}
 resource "aws_vpc" "ft_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
-  tags  = {
+  tags = {
     Name = "ft-vpc"
   }
 }
@@ -43,7 +43,7 @@ resource "aws_subnet" "ft_jenkins" {
   vpc_id            = aws_vpc.ft_vpc.id
   cidr_block        = "10.0.200.0/24"
   availability_zone = "us-east-1a"
-  tags =  {
+  tags = {
     Name = "ft-sub-jenkins"
   }
 }
@@ -66,7 +66,7 @@ resource "aws_subnet" "ft_prod" {
 resource "aws_subnet" "ft_dev" {
   count                   = length(data.aws_availability_zones.available.names)
   vpc_id                  = aws_vpc.ft_vpc.id
-  cidr_block              = "10.0.${100+count.index}.0/24"
+  cidr_block              = "10.0.${100 + count.index}.0/24"
   map_public_ip_on_launch = true
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
@@ -75,10 +75,33 @@ resource "aws_subnet" "ft_dev" {
   }
 }
 
+#Default SG
+
+resource "aws_security_group" "default_ft" {
+  name        = "terraform_security_group"
+  description = "Terraform ft security group"
+  vpc_id      = aws_vpc.ft_vpc.id
+
+  # Restrict inboud SSH traffic by IP address.
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow ICMP echo requests.
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 #SG for DEV
 resource "aws_security_group" "alb_dev" {
-  name = "alb_dev-security-group"
-
+  name   = "alb_dev-security-group"
+  vpc_id = aws_vpc.ft_vpc.id
   # Allow HTTP
   ingress {
     from_port   = 80
@@ -96,8 +119,8 @@ resource "aws_security_group" "alb_dev" {
 }
 #SG for PROD
 resource "aws_security_group" "alb_prod" {
-  name = "alb_prod-security-group"
-
+  name   = "alb_prod-security-group"
+  vpc_id = aws_vpc.ft_vpc.id
   # Allow HTTP
   ingress {
     from_port   = 80
@@ -116,8 +139,8 @@ resource "aws_security_group" "alb_prod" {
 
 #SG for Jenkins
 resource "aws_security_group" "jenkins" {
-  name = "jenkins-security-group"
-
+  name   = "jenkins-security-group"
+  vpc_id = aws_vpc.ft_vpc.id
   ingress {
     from_port   = 8080
     to_port     = 8080
