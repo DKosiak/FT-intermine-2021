@@ -1,0 +1,18 @@
+---
+
+- name: Build jenkins casc image
+  hosts: jenkins_hosts
+  become: yes
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    source_dir: /home/ec2-user/FT-Repo/FT-intermine-2021/Docker_files
+
+  tasks:
+    - name: Build container image
+      docker_image:
+        name: jenkins_jcasc_ft
+        build:
+          path: "{{ source_dir }}"
+        source: build
+        state: present

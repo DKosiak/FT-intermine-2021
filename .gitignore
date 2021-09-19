@@ -1,2 +1,2 @@
-/TF_files/.terraform/*
+/TF_files/.terraform/**
 /TF_files/.terraform.lock.hcl

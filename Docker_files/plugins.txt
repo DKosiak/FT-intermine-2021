@@ -18,3 +18,8 @@ ssh-slaves:latest
 timestamper:latest
 workflow-aggregator:latest
 ws-cleanup:latest
+terraform:latest
+docker-build-publish:latest
+greenballs:latest
+maven-plugin:latest
+publish-over-ssh:latest
