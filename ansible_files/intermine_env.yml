@@ -1,0 +1,56 @@
+---
+
+- name: Install Environment for Intermine
+  hosts: intermine_hosts
+  become: yes
+
+  vars:
+    download_dir: /home/ec2-user
+
+  tasks:
+
+  - name: Check Linux distro
+    debug: var=ansible_os_family
+ 
+  - block: # For RedHat
+
+    - name: Install Git
+      yum:  name=git state=latest
+
+    - name: Instal Java SDK
+      yum:  name=java-1.8.0-openjdk-devel state=present
+
+      #    - name: Install PostgreSQL key
+      #yum:
+      #  name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+      #    - name: Install PostgresSQL
+      #yum:  
+      #  name: "{{ item }}"
+      #  state: latest
+      #with_items:
+      #  - postgresql96-server
+      #  - postgresql96-contrib
+      #  - pg_repack96
+
+    - name: Install Postgres
+      command: "amazon-linux-extras install postgresql9.6=latest -y"
+
+    - name: Install Tomcat
+      yum: name=tomcat state=latest
+
+    - name: Download Solr
+      get_url:
+        url: "http://apache.osuosl.org/lucene/solr/7.7.3/solr-7.7.3.tgz"
+        dest: "{{ download_dir }}/solr-7.7.3.tgz"
+    - name: Expand Solr
+      command: "tar -xzvf {{ download_dir }}/solr-7.7.3.tgz solr-7.7.3/bin/install_solr_service.sh --strip-components=2"
+
+    - name: Install Solr as service
+      command: "./install_solr_service.sh solr-7.7.3.tgz -f"
+
+    - name: Install Perl
+      yum:  name=perl state=latest
+
+    when: ansible_os_family == "RedHat"
+
